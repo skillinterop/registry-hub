@@ -1,0 +1,2 @@
+# This directory stores cached manifest snapshots from leaf registries.
+# Initially empty - populated by the sync process.
