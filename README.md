@@ -27,9 +27,9 @@ registry-hub/
 
 | Registry Type | Repository | Branch | Channel |
 |---------------|------------|--------|---------|
-| skill | [skillinterop/skill-registry](https://github.com/skillinterop/skill-registry) | main | stable |
-| cao-profile | [skillinterop/cao-profile-registry](https://github.com/skillinterop/cao-profile-registry) | main | stable |
-| reprogate | [skillinterop/reprogate-registry](https://github.com/skillinterop/reprogate-registry) | main | stable |
+| skill | [skillinterop/skill-registry](https://github.com/skillinterop/skill-registry) | main | all |
+| cao-profile | [skillinterop/cao-profile-registry](https://github.com/skillinterop/cao-profile-registry) | main | all |
+| reprogate | [skillinterop/reprogate-registry](https://github.com/skillinterop/reprogate-registry) | main | all |
 
 ## Hub Config Format
 
@@ -82,8 +82,8 @@ See [docs/resolution.md](./docs/resolution.md) for detailed resolution flow.
 ## TODO
 
 - [ ] Schema extraction to dedicated repo (deferred — see design decision)
-- [ ] Implement hub-index generation logic
-- [ ] Add CI workflow for automatic index regeneration
+- [x] Implement hub-index generation logic (`scripts/generate-index.sh`)
+- [x] Add CI workflow for automatic index regeneration (`.github/workflows/generate-index.yml`)
 
 ## License
 
