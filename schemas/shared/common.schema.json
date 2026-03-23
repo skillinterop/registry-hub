@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "shared/common.schema.json",
+  "title": "Common Schema Definitions",
+  "description": "Shared definitions for all registry schemas",
+  "definitions": {
+    "SemanticVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic versioning format: MAJOR.MINOR.PATCH"
+    },
+    "Channel": {
+      "type": "string",
+      "enum": ["stable", "experimental"],
+      "description": "Release channel for the item"
+    },
+    "RegistryType": {
+      "type": "string",
+      "enum": ["skill", "cao-profile", "reprogate"],
+      "description": "Type of registry"
+    },
+    "KebabCaseName": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Kebab-case identifier starting with alphanumeric"
+    },
+    "ItemStatus": {
+      "type": "string",
+      "enum": ["active", "deprecated", "archived"],
+      "description": "Lifecycle status of the item"
+    },
+    "ISODateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 date-time format"
+    }
+  }
+}

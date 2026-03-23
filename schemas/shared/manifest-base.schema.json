@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "shared/manifest-base.schema.json",
+  "title": "Base Manifest Schema",
+  "description": "Base definitions for leaf registry manifest schemas",
+  "definitions": {
+    "BaseManifestProperties": {
+      "type": "object",
+      "description": "Common manifest root properties",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Registry namespace identifier"
+        },
+        "version": {
+          "$ref": "common.schema.json#/definitions/SemanticVersion"
+        },
+        "channel": {
+          "$ref": "common.schema.json#/definitions/Channel"
+        },
+        "generatedAt": {
+          "$ref": "common.schema.json#/definitions/ISODateTime"
+        }
+      }
+    },
+    "BaseManifestItem": {
+      "type": "object",
+      "description": "Common manifest item properties",
+      "properties": {
+        "name": {
+          "$ref": "common.schema.json#/definitions/KebabCaseName"
+        },
+        "version": {
+          "$ref": "common.schema.json#/definitions/SemanticVersion"
+        },
+        "description": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "channel": {
+          "$ref": "common.schema.json#/definitions/Channel"
+        },
+        "status": {
+          "$ref": "common.schema.json#/definitions/ItemStatus"
+        },
+        "deprecatedBy": {
+          "type": ["string", "null"]
+        },
+        "metadata": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

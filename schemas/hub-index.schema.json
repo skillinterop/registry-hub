@@ -7,12 +7,10 @@
   "required": ["hubVersion", "generatedAt", "totalItems", "registries", "items"],
   "properties": {
     "hubVersion": {
-      "type": "string",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+      "$ref": "shared/common.schema.json#/definitions/SemanticVersion"
     },
     "generatedAt": {
-      "type": "string",
-      "format": "date-time"
+      "$ref": "shared/common.schema.json#/definitions/ISODateTime"
     },
     "totalItems": {
       "type": "integer",
@@ -37,8 +35,7 @@
       "required": ["registryType", "repoUrl", "itemCount", "lastUpdated"],
       "properties": {
         "registryType": {
-          "type": "string",
-          "enum": ["skill", "cao-profile", "reprogate"]
+          "$ref": "shared/common.schema.json#/definitions/RegistryType"
         },
         "repoUrl": {
           "type": "string",
@@ -49,8 +46,7 @@
           "minimum": 0
         },
         "lastUpdated": {
-          "type": "string",
-          "format": "date-time"
+          "$ref": "shared/common.schema.json#/definitions/ISODateTime"
         }
       }
     },
@@ -62,14 +58,13 @@
           "type": "string"
         },
         "registryType": {
-          "type": "string",
-          "enum": ["skill", "cao-profile", "reprogate"]
+          "$ref": "shared/common.schema.json#/definitions/RegistryType"
         },
         "name": {
           "type": "string"
         },
         "version": {
-          "type": "string"
+          "$ref": "shared/common.schema.json#/definitions/SemanticVersion"
         },
         "description": {
           "type": "string"
