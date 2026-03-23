@@ -1,0 +1,29 @@
+{
+  "@context": {
+    "@vocab": "http://schema.org/",
+    "skillinterop": "https://skillinterop.org/ns#"
+  },
+  "@type": "DataCatalog",
+  "name": "SkillInterop Registry Hub",
+  "description": "Central entrypoint for SkillInterop registries",
+  "hasPart": [
+    {
+      "@type": "DataCatalog",
+      "name": "Skill Registry",
+      "url": "https://raw.githubusercontent.com/skillinterop/skill-registry/main/index.jsonld",
+      "skillinterop:registryType": "skill"
+    },
+    {
+      "@type": "DataCatalog",
+      "name": "CAO Profile Registry",
+      "url": "https://raw.githubusercontent.com/skillinterop/cao-profile-registry/main/index.jsonld",
+      "skillinterop:registryType": "cao-profile"
+    },
+    {
+      "@type": "DataCatalog",
+      "name": "ReproGate Registry",
+      "url": "https://raw.githubusercontent.com/skillinterop/reprogate-registry/main/index.jsonld",
+      "skillinterop:registryType": "reprogate"
+    }
+  ]
+}
