@@ -1,25 +1,25 @@
 {
   "hubVersion": "0.1.0",
-  "generatedAt": "2026-03-23T00:44:29Z",
+  "generatedAt": "2026-03-23T00:53:29Z",
   "totalItems": 3,
   "registries": [
     {
       "registryType": "skill",
       "repoUrl": "https://github.com/skillinterop/skill-registry",
       "itemCount": 1,
-      "lastUpdated": "2026-03-23T00:44:29Z"
+      "lastUpdated": "2026-03-23T00:53:29Z"
     },
     {
       "registryType": "cao-profile",
       "repoUrl": "https://github.com/skillinterop/cao-profile-registry",
       "itemCount": 1,
-      "lastUpdated": "2026-03-23T00:44:29Z"
+      "lastUpdated": "2026-03-23T00:53:29Z"
     },
     {
       "registryType": "reprogate",
       "repoUrl": "https://github.com/skillinterop/reprogate-registry",
       "itemCount": 1,
-      "lastUpdated": "2026-03-23T00:44:29Z"
+      "lastUpdated": "2026-03-23T00:53:29Z"
     }
   ],
   "items": [
