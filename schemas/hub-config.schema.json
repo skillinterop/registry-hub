@@ -7,8 +7,7 @@
   "required": ["hubVersion", "sources"],
   "properties": {
     "hubVersion": {
-      "type": "string",
-      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+      "$ref": "shared/common.schema.json#/definitions/SemanticVersion"
     },
     "sources": {
       "type": "array",
@@ -23,8 +22,7 @@
       "required": ["registryType", "repoUrl", "manifestPath", "branch", "channel"],
       "properties": {
         "registryType": {
-          "type": "string",
-          "enum": ["skill", "cao-profile", "reprogate"]
+          "$ref": "shared/common.schema.json#/definitions/RegistryType"
         },
         "repoUrl": {
           "type": "string",

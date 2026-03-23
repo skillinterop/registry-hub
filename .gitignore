@@ -31,6 +31,3 @@ temp/
 # Cached manifests (regenerated on sync)
 sources/*.json
 !sources/.gitkeep
-
-# Local tool state
-.omc/
