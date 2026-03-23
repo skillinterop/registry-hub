@@ -13,7 +13,6 @@ GENERATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # Initialize arrays for aggregation
 REGISTRIES_JSON="[]"
 ITEMS_JSON="[]"
-TOTAL_ITEMS=0
 
 # Process each source
 while IFS= read -r source; do
@@ -29,8 +28,17 @@ while IFS= read -r source; do
 
   echo "Fetching $REGISTRY_TYPE from $RAW_URL..."
 
-  # Fetch manifest
-  MANIFEST=$(curl -sf "$RAW_URL" || echo '{"items":[]}')
+  # Fetch manifest with timeout
+  if ! MANIFEST=$(curl -sf --connect-timeout 10 --max-time 30 "$RAW_URL"); then
+    echo "  WARNING: Failed to fetch $REGISTRY_TYPE from $RAW_URL" >&2
+    MANIFEST='{"items":[]}'
+  fi
+
+  # Validate JSON
+  if ! echo "$MANIFEST" | jq empty 2>/dev/null; then
+    echo "  WARNING: Invalid JSON from $RAW_URL, skipping" >&2
+    MANIFEST='{"items":[]}'
+  fi
 
   # Filter items by channel and transform
   if [ "$CHANNEL" = "all" ]; then
@@ -58,7 +66,6 @@ while IFS= read -r source; do
   fi
 
   ITEM_COUNT=$(echo "$FILTERED_ITEMS" | jq 'length')
-  TOTAL_ITEMS=$((TOTAL_ITEMS + ITEM_COUNT))
 
   # Add registry summary
   REGISTRY_SUMMARY=$(jq -n \
@@ -74,6 +81,10 @@ while IFS= read -r source; do
   echo "  -> $ITEM_COUNT items"
 
 done < <(jq -c '.sources[]' "$CONFIG_FILE")
+
+# Deduplicate by canonicalId (first occurrence wins - matches source priority)
+ITEMS_JSON=$(echo "$ITEMS_JSON" | jq 'unique_by(.canonicalId)')
+TOTAL_ITEMS=$(echo "$ITEMS_JSON" | jq 'length')
 
 # Generate final hub-index.json
 jq -n \

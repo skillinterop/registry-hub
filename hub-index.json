@@ -1,37 +1,28 @@
 {
   "hubVersion": "0.1.0",
-  "generatedAt": "2026-03-23T00:40:28Z",
+  "generatedAt": "2026-03-23T00:44:29Z",
   "totalItems": 3,
   "registries": [
     {
       "registryType": "skill",
       "repoUrl": "https://github.com/skillinterop/skill-registry",
       "itemCount": 1,
-      "lastUpdated": "2026-03-23T00:40:28Z"
+      "lastUpdated": "2026-03-23T00:44:29Z"
     },
     {
       "registryType": "cao-profile",
       "repoUrl": "https://github.com/skillinterop/cao-profile-registry",
       "itemCount": 1,
-      "lastUpdated": "2026-03-23T00:40:28Z"
+      "lastUpdated": "2026-03-23T00:44:29Z"
     },
     {
       "registryType": "reprogate",
       "repoUrl": "https://github.com/skillinterop/reprogate-registry",
       "itemCount": 1,
-      "lastUpdated": "2026-03-23T00:40:28Z"
+      "lastUpdated": "2026-03-23T00:44:29Z"
     }
   ],
   "items": [
-    {
-      "canonicalId": "skill/org/workmux-router@1.0.0",
-      "registryType": "skill",
-      "name": "workmux-router",
-      "version": "1.0.0",
-      "description": "Natural-language task launcher and router using workmux and git worktree",
-      "channel": "stable",
-      "sourceRepo": "https://github.com/skillinterop/skill-registry"
-    },
     {
       "canonicalId": "cao-profile/org/default-cao@0.1.0",
       "registryType": "cao-profile",
@@ -49,6 +40,15 @@
       "description": "Code review quality gate for reproducible review workflows",
       "channel": "experimental",
       "sourceRepo": "https://github.com/skillinterop/reprogate-registry"
+    },
+    {
+      "canonicalId": "skill/org/workmux-router@1.0.0",
+      "registryType": "skill",
+      "name": "workmux-router",
+      "version": "1.0.0",
+      "description": "Natural-language task launcher and router using workmux and git worktree",
+      "channel": "stable",
+      "sourceRepo": "https://github.com/skillinterop/skill-registry"
     }
   ]
 }
