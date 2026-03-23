@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hub-index.schema.json",
+  "title": "Registry Hub Index",
+  "description": "Schema for registry-hub hub-index.json - the aggregated index of all leaf registries",
+  "type": "object",
+  "required": ["hubVersion", "generatedAt", "totalItems", "registries", "items"],
+  "properties": {
+    "hubVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "totalItems": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "registries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/RegistrySummary"
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IndexedItem"
+      }
+    }
+  },
+  "definitions": {
+    "RegistrySummary": {
+      "type": "object",
+      "required": ["registryType", "repoUrl", "itemCount", "lastUpdated"],
+      "properties": {
+        "registryType": {
+          "type": "string",
+          "enum": ["skill", "cao-profile", "reprogate"]
+        },
+        "repoUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "itemCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "IndexedItem": {
+      "type": "object",
+      "required": ["canonicalId", "registryType", "name", "version", "description", "sourceRepo"],
+      "properties": {
+        "canonicalId": {
+          "type": "string"
+        },
+        "registryType": {
+          "type": "string",
+          "enum": ["skill", "cao-profile", "reprogate"]
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "sourceRepo": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

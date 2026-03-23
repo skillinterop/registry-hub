@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hub-config.schema.json",
+  "title": "Registry Hub Config",
+  "description": "Schema for registry-hub hub-config.json",
+  "type": "object",
+  "required": ["hubVersion", "sources"],
+  "properties": {
+    "hubVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/SourceRef"
+      }
+    }
+  },
+  "definitions": {
+    "SourceRef": {
+      "type": "object",
+      "required": ["registryType", "repoUrl", "manifestPath", "branch", "channel"],
+      "properties": {
+        "registryType": {
+          "type": "string",
+          "enum": ["skill", "cao-profile", "reprogate"]
+        },
+        "repoUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "manifestPath": {
+          "type": "string",
+          "default": "manifest.json"
+        },
+        "branch": {
+          "type": "string",
+          "default": "main"
+        },
+        "channel": {
+          "type": "string",
+          "enum": ["stable", "all"],
+          "default": "stable"
+        }
+      }
+    }
+  }
+}
