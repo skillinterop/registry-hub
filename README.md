@@ -124,6 +124,32 @@ bash scripts/validate-registry-contracts.sh
 
 실패 형식과 트러블슈팅은 `docs/validation.md` 를 따른다.
 
+## Publish a leaf item
+
+Leaf registry publication now has one documented flow in the hub repo.
+
+1. Prepare the markdown content file with matching frontmatter.
+2. Run `bash scripts/publish-leaf-item.sh ...` with the correct `--registry-type`.
+3. Review the selected leaf repo diff and confirm validation passes.
+
+Start with `docs/publish.md` for the canonical workflow and `docs/validation.md` for failure triage.
+
+## Import registry items
+
+Projects can import a registry item from the hub without cloning any registry repository. Use the `npx`-style CLI to preview and import items by canonical identifier.
+
+```bash
+# Preview a skill import (codex runtime)
+npx @skillinterop/registry-hub-import preview skill/org/[MASKED_EMAIL] --runtime codex
+
+# Preview a CAO profile import
+npx @skillinterop/registry-hub-import preview cao-profile/org/[MASKED_EMAIL] --project-root "$PWD"
+```
+
+The preview resolves `registry-catalog.jsonld` to find `hub-index.json` and shows the resolved item, source repository, artifact URL, and destination path before any file is written.
+
+See [docs/import.md](docs/import.md) for the full consumer import guide including destination policy and all CLI options.
+
 ## 관련 저장소
 
 - [`skill-registry`](https://github.com/skillinterop/skill-registry) — Skill leaf registry
