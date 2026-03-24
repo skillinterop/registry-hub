@@ -1,0 +1,46 @@
+name: Hub PR Validate
+
+on:
+  pull_request:
+    paths:
+      - hub-config.json
+      - registry-catalog.jsonld
+      - hub-index.json
+      - package.json
+      - package-lock.json
+      - schemas/**
+      - scripts/**
+      - .github/workflows/**
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out hub repository
+        uses: actions/checkout@v4
+        with:
+          path: registry-hub-repo
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: registry-hub-repo/package-lock.json
+
+      - name: Clone sibling registries
+        run: |
+          git clone --depth 1 https://github.com/skillinterop/skill-registry.git skill-registry
+          git clone --depth 1 https://github.com/skillinterop/cao-profile-registry.git cao-profile-registry
+          git clone --depth 1 https://github.com/skillinterop/reprogate-registry.git reprogate-registry
+
+      - name: Install hub dependencies
+        working-directory: registry-hub-repo
+        run: npm ci
+
+      - name: Validate registry contracts
+        working-directory: registry-hub-repo
+        run: bash scripts/validate-registry-contracts.sh
