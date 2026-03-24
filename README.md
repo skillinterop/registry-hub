@@ -150,6 +150,14 @@ The preview resolves `registry-catalog.jsonld` to find `hub-index.json` and show
 
 See [docs/import.md](docs/import.md) for the full consumer import guide including destination policy and all CLI options.
 
+## GitHub automation rollout
+
+GitHub Actions enforce the shared contract and keep hub artifacts in sync. The rollout uses `configure-github-merge-gates.sh` to apply required checks only after workflow contexts exist. Required checks are enabled only after workflow contexts exist — the script refuses to apply protections until the live check contexts have appeared at least once.
+
+- **Rollout guide:** [docs/github-automation.md](docs/github-automation.md) — workflow inventory, required checks, bot setup, and staged rollout order
+- **Rollout script:** `bash scripts/configure-github-merge-gates.sh --owner skillinterop`
+- **Validation triage:** [docs/validation.md](docs/validation.md) — OK/FAIL contract interpretation
+
 ## 관련 저장소
 
 - [`skill-registry`](https://github.com/skillinterop/skill-registry) — Skill leaf registry
