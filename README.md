@@ -101,6 +101,19 @@ registry-hub/
 - **No content vendoring**: 실제 패키지 콘텐츠는 각 leaf 저장소에 남고, hub는 메타데이터만 집계한다.
 - **Deterministic ordering**: source 우선순위는 `hub-config.json`의 선언 순서를 따른다.
 
+## Validation Targets
+
+현재 허브에서 로컬 검증 대상으로 취급하는 메타데이터 경계는 다음과 같다.
+
+| Metadata File | Schema File | 역할 |
+|---------------|-------------|------|
+| `hub-config.json` | `schemas/hub-config.schema.json` | 유지보수자용 source-of-truth |
+| `registry-catalog.jsonld` | `schemas/registry-catalog.schema.json` | 공개 허브 엔트리포인트 |
+| `hub-index.json` | `schemas/hub-index.schema.json` | 생성된 집계 인덱스 |
+| leaf `index.jsonld` | `schemas/shared/jsonld-catalog.schema.json` 기반 leaf schema | 리프 레지스트리 공개 카탈로그 |
+
+로컬 검증 명령은 `bash scripts/validate-registry-contracts.sh` 로 제공된다. 자세한 실패 해석은 `docs/validation.md` 에서 다룬다.
+
 ## 관련 저장소
 
 - [`skill-registry`](https://github.com/skillinterop/skill-registry) — Skill leaf registry
