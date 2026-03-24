@@ -114,6 +114,16 @@ registry-hub/
 
 로컬 검증 명령은 `bash scripts/validate-registry-contracts.sh` 로 제공된다. 자세한 실패 해석은 `docs/validation.md` 에서 다룬다.
 
+## Validate before push
+
+푸시 전에 아래 명령을 실행한다.
+
+```bash
+bash scripts/validate-registry-contracts.sh
+```
+
+실패 형식과 트러블슈팅은 `docs/validation.md` 를 따른다.
+
 ## 관련 저장소
 
 - [`skill-registry`](https://github.com/skillinterop/skill-registry) — Skill leaf registry
