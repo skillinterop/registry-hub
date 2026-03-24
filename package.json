@@ -12,7 +12,8 @@
   },
   "scripts": {
     "validate": "bash scripts/validate-registry-contracts.sh",
-    "test:import:resolution": "bash scripts/test-import-resolution.sh"
+    "test:import:resolution": "bash scripts/test-import-resolution.sh",
+    "test:import:execution": "bash scripts/test-import-execution.sh"
   },
   "dependencies": {
     "ajv": "8.18.0",

@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 // registry-hub-import — hub-driven import CLI for SkillInterop registry items
-// Usage: registry-hub-import preview <canonical-id> [options]
+// Usage: registry-hub-import <command> <canonical-id> [options]
 
 import { resolveImportItem } from '../lib/resolve-import-item.mjs';
 import { resolveImportDestination } from '../lib/resolve-import-destination.mjs';
 import { renderImportPreview } from '../lib/render-import-preview.mjs';
+import { importArtifact } from '../lib/import-artifact.mjs';
+import { writeImportReceipt } from '../lib/write-import-receipt.mjs';
+import { createInterface } from 'readline';
 
-const USAGE = `Usage: registry-hub-import preview <canonical-id> [options]
+const USAGE = `Usage: registry-hub-import <command> <canonical-id> [options]
 
 Commands:
   preview <canonical-id>   Resolve and display import preview (no files written)
+  import <canonical-id>    Resolve, confirm, and write the artifact to its destination
   help                     Show this help message
 
 Options:
@@ -18,11 +22,15 @@ Options:
   --runtime <runtime>      Target runtime for skill destination mapping (codex|claude-code)
   --project-root <path>    Project root directory for destination resolution
   --target-path <path>     Explicit destination path (required when runtime is unknown)
+  --overwrite              Replace an existing destination file (default: abort)
+  --yes                    Skip the confirmation prompt and proceed automatically
+  --save-receipt           Write a project-local import receipt to <project-root>/.registry/imports/
 
 Examples:
-  registry-hub-import preview skill/org/workmux-router@1.0.0 --runtime codex
-  registry-hub-import preview cao-profile/org/default-cao@0.1.0 --project-root "$PWD"
-  registry-hub-import preview skill/org/workmux-router@1.0.0 --target-path ./my-skills/workmux-router/SKILL.md
+  registry-hub-import preview skill/org/[MASKED_EMAIL] --runtime codex
+  registry-hub-import import skill/org/[MASKED_EMAIL] --runtime codex --yes
+  registry-hub-import import cao-profile/org/[MASKED_EMAIL] --project-root "$PWD" --save-receipt --yes
+  registry-hub-import preview skill/org/[MASKED_EMAIL] --target-path ./my-skills/workmux-router/SKILL.md
 `;
 
 function parseArgs(argv) {
@@ -33,6 +41,9 @@ function parseArgs(argv) {
     runtime: null,
     projectRoot: null,
     targetPath: null,
+    overwrite: false,
+    yes: false,
+    saveReceipt: false,
   };
 
   const positional = [];
@@ -47,6 +58,12 @@ function parseArgs(argv) {
       args.projectRoot = argv[++i];
     } else if (arg === '--target-path') {
       args.targetPath = argv[++i];
+    } else if (arg === '--overwrite') {
+      args.overwrite = true;
+    } else if (arg === '--yes' || arg === '-y') {
+      args.yes = true;
+    } else if (arg === '--save-receipt') {
+      args.saveReceipt = true;
     } else {
       positional.push(arg);
     }
@@ -61,6 +78,23 @@ function parseArgs(argv) {
   }
 
   return args;
+}
+
+/**
+ * Prompt the user with a yes/no question and return true if they answer y/yes.
+ */
+async function promptConfirm(question) {
+  return new Promise((resolve) => {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.question(question, (answer) => {
+      rl.close();
+      const normalized = answer.trim().toLowerCase();
+      resolve(normalized === 'y' || normalized === 'yes');
+    });
+  });
 }
 
 async function main() {
@@ -103,8 +137,76 @@ async function main() {
     process.exit(0);
   }
 
+  if (args.command === 'import') {
+    if (!args.canonicalId) {
+      process.stderr.write('Error: canonical-id is required\n');
+      process.stderr.write('Usage: registry-hub-import import <canonical-id>\n');
+      process.exit(1);
+    }
+
+    // 1. Resolve item from catalog
+    let item;
+    try {
+      item = await resolveImportItem(args.canonicalId, { catalog: args.catalog });
+    } catch (err) {
+      process.stderr.write(`Error: ${err.message}\n`);
+      process.exit(1);
+    }
+
+    // 2. Resolve destination
+    let destination;
+    try {
+      destination = resolveImportDestination(item, {
+        runtime: args.runtime,
+        projectRoot: args.projectRoot,
+        targetPath: args.targetPath,
+      });
+    } catch (err) {
+      process.stderr.write(`Error: ${err.message}\n`);
+      process.exit(1);
+    }
+
+    // 3. Print preview before any write
+    renderImportPreview(item, destination);
+    process.stdout.write('\n');
+
+    // 4. Confirmation prompt (skipped if --yes)
+    if (!args.yes) {
+      const confirmed = await promptConfirm('Proceed with import? [y/N] ');
+      if (!confirmed) {
+        process.stdout.write('Import aborted.\n');
+        process.exit(0);
+      }
+    }
+
+    // 5. Perform the actual artifact write
+    try {
+      await importArtifact(item, destination, { overwrite: args.overwrite });
+    } catch (err) {
+      process.stderr.write(`Error: ${err.message}\n`);
+      process.exit(1);
+    }
+
+    process.stdout.write(`Imported: ${destination}\n`);
+
+    // 6. Opt-in receipt persistence
+    if (args.saveReceipt) {
+      const projectRoot = args.projectRoot || process.cwd();
+      try {
+        const receiptPath = await writeImportReceipt(item, destination, { projectRoot });
+        process.stdout.write(`Receipt: ${receiptPath}\n`);
+      } catch (err) {
+        process.stderr.write(`Warning: receipt write failed: ${err.message}\n`);
+      }
+    } else {
+      process.stdout.write('Receipt: skipped (default)\n');
+    }
+
+    process.exit(0);
+  }
+
   process.stderr.write(`Error: unknown command '${args.command}'\n`);
-  process.stderr.write('Usage: registry-hub-import preview <canonical-id>\n');
+  process.stderr.write('Usage: registry-hub-import <command> <canonical-id>\n');
   process.exit(1);
 }
 
