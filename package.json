@@ -1,0 +1,21 @@
+{
+  "name": "@skillinterop/registry-hub-import",
+  "version": "0.1.0",
+  "description": "Hub-driven import CLI for SkillInterop registry items",
+  "private": false,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "registry-hub-import": "./bin/registry-hub-import.mjs"
+  },
+  "scripts": {
+    "validate": "bash scripts/validate-registry-contracts.sh",
+    "test:import:resolution": "bash scripts/test-import-resolution.sh"
+  },
+  "dependencies": {
+    "ajv": "8.18.0",
+    "ajv-formats": "3.0.1"
+  }
+}
