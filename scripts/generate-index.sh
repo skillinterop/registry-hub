@@ -6,74 +6,77 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 CONFIG_FILE="$ROOT_DIR/hub-config.json"
 OUTPUT_FILE="$ROOT_DIR/hub-index.json"
 
-# Read hub version
+raw_base_url() {
+  printf '%s' "$1" | sed 's|^https://github.com/|https://raw.githubusercontent.com/|'
+}
+
 HUB_VERSION=$(jq -r '.hubVersion' "$CONFIG_FILE")
 GENERATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-# Initialize arrays for aggregation
 REGISTRIES_JSON="[]"
 ITEMS_JSON="[]"
 
-# Process each source
 while IFS= read -r source; do
   REGISTRY_TYPE=$(echo "$source" | jq -r '.registryType')
   REPO_URL=$(echo "$source" | jq -r '.repoUrl')
-  MANIFEST_PATH=$(echo "$source" | jq -r '.manifestPath')
+  CATALOG_PATH=$(echo "$source" | jq -r '.catalogPath')
   BRANCH=$(echo "$source" | jq -r '.branch')
   CHANNEL=$(echo "$source" | jq -r '.channel')
+  RAW_BASE=$(raw_base_url "$REPO_URL")
+  RAW_CATALOG_URL="${RAW_BASE}/${BRANCH}/${CATALOG_PATH}"
 
-  # Convert repo URL to raw content URL
-  # https://github.com/org/repo -> https://raw.githubusercontent.com/org/repo/branch/path
-  RAW_URL=$(echo "$REPO_URL" | sed 's|github.com|raw.githubusercontent.com|')/"$BRANCH"/"$MANIFEST_PATH"
+  echo "Fetching $REGISTRY_TYPE from $RAW_CATALOG_URL..."
 
-  echo "Fetching $REGISTRY_TYPE from $RAW_URL..."
-
-  # Fetch manifest with timeout
-  if ! MANIFEST=$(curl -sf --connect-timeout 10 --max-time 30 "$RAW_URL"); then
-    echo "  WARNING: Failed to fetch $REGISTRY_TYPE from $RAW_URL" >&2
-    MANIFEST='{"items":[]}'
+  if ! CATALOG=$(curl -sf --connect-timeout 10 --max-time 30 "$RAW_CATALOG_URL"); then
+    echo "  WARNING: Failed to fetch $REGISTRY_TYPE from $RAW_CATALOG_URL" >&2
+    CATALOG='{"dataset":[]}'
   fi
 
-  # Validate JSON
-  if ! echo "$MANIFEST" | jq empty 2>/dev/null; then
-    echo "  WARNING: Invalid JSON from $RAW_URL, skipping" >&2
-    MANIFEST='{"items":[]}'
+  if ! echo "$CATALOG" | jq empty 2>/dev/null; then
+    echo "  WARNING: Invalid JSON from $RAW_CATALOG_URL, skipping" >&2
+    CATALOG='{"dataset":[]}'
   fi
 
-  # Filter items by channel and transform
   if [ "$CHANNEL" = "all" ]; then
-    FILTERED_ITEMS=$(echo "$MANIFEST" | jq --arg repo "$REPO_URL" --arg type "$REGISTRY_TYPE" \
-      '[.items[] | {
-        canonicalId: .canonicalId,
+    FILTERED_ITEMS=$(echo "$CATALOG" | jq --arg repo "$REPO_URL" --arg type "$REGISTRY_TYPE" --arg catalog "$RAW_CATALOG_URL" --arg rawBase "$RAW_BASE" --arg branch "$BRANCH" \
+      '[.dataset[] | {
+        canonicalId: .identifier,
         registryType: $type,
         name: .name,
         version: .version,
         description: .description,
-        channel: .channel,
-        sourceRepo: $repo
+        channel: .["skillinterop:channel"],
+        status: .["skillinterop:status"],
+        sourceRepo: $repo,
+        sourceCatalog: $catalog,
+        artifactPath: .url,
+        artifactUrl: ($rawBase + "/" + $branch + "/" + (.url | ltrimstr("./")))
       }]')
   else
-    FILTERED_ITEMS=$(echo "$MANIFEST" | jq --arg repo "$REPO_URL" --arg type "$REGISTRY_TYPE" --arg chan "$CHANNEL" \
-      '[.items[] | select(.channel == $chan) | {
-        canonicalId: .canonicalId,
+    FILTERED_ITEMS=$(echo "$CATALOG" | jq --arg repo "$REPO_URL" --arg type "$REGISTRY_TYPE" --arg catalog "$RAW_CATALOG_URL" --arg rawBase "$RAW_BASE" --arg branch "$BRANCH" --arg chan "$CHANNEL" \
+      '[.dataset[] | select(.["skillinterop:channel"] == $chan) | {
+        canonicalId: .identifier,
         registryType: $type,
         name: .name,
         version: .version,
         description: .description,
-        channel: .channel,
-        sourceRepo: $repo
+        channel: .["skillinterop:channel"],
+        status: .["skillinterop:status"],
+        sourceRepo: $repo,
+        sourceCatalog: $catalog,
+        artifactPath: .url,
+        artifactUrl: ($rawBase + "/" + $branch + "/" + (.url | ltrimstr("./")))
       }]')
   fi
 
   ITEM_COUNT=$(echo "$FILTERED_ITEMS" | jq 'length')
 
-  # Add registry summary
   REGISTRY_SUMMARY=$(jq -n \
     --arg type "$REGISTRY_TYPE" \
     --arg url "$REPO_URL" \
+    --arg catalog "$RAW_CATALOG_URL" \
     --argjson count "$ITEM_COUNT" \
     --arg updated "$GENERATED_AT" \
-    '{registryType: $type, repoUrl: $url, itemCount: $count, lastUpdated: $updated}')
+    '{registryType: $type, repoUrl: $url, catalogUrl: $catalog, itemCount: $count, lastUpdated: $updated}')
 
   REGISTRIES_JSON=$(echo "$REGISTRIES_JSON" | jq --argjson reg "$REGISTRY_SUMMARY" '. + [$reg]')
   ITEMS_JSON=$(echo "$ITEMS_JSON" | jq --argjson items "$FILTERED_ITEMS" '. + $items')
@@ -82,11 +85,9 @@ while IFS= read -r source; do
 
 done < <(jq -c '.sources[]' "$CONFIG_FILE")
 
-# Deduplicate by canonicalId (first occurrence wins - matches source priority)
 ITEMS_JSON=$(echo "$ITEMS_JSON" | jq 'unique_by(.canonicalId)')
 TOTAL_ITEMS=$(echo "$ITEMS_JSON" | jq 'length')
 
-# Generate final hub-index.json
 jq -n \
   --arg version "$HUB_VERSION" \
   --arg generated "$GENERATED_AT" \

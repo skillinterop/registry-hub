@@ -32,12 +32,16 @@
   "definitions": {
     "RegistrySummary": {
       "type": "object",
-      "required": ["registryType", "repoUrl", "itemCount", "lastUpdated"],
+      "required": ["registryType", "repoUrl", "catalogUrl", "itemCount", "lastUpdated"],
       "properties": {
         "registryType": {
           "$ref": "shared/common.schema.json#/definitions/RegistryType"
         },
         "repoUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "catalogUrl": {
           "type": "string",
           "format": "uri"
         },
@@ -52,7 +56,7 @@
     },
     "IndexedItem": {
       "type": "object",
-      "required": ["canonicalId", "registryType", "name", "version", "description", "sourceRepo"],
+      "required": ["canonicalId", "registryType", "name", "version", "description", "channel", "status", "sourceRepo", "sourceCatalog", "artifactPath", "artifactUrl"],
       "properties": {
         "canonicalId": {
           "type": "string"
@@ -69,7 +73,24 @@
         "description": {
           "type": "string"
         },
+        "channel": {
+          "$ref": "shared/common.schema.json#/definitions/Channel"
+        },
+        "status": {
+          "$ref": "shared/common.schema.json#/definitions/ItemStatus"
+        },
         "sourceRepo": {
+          "type": "string",
+          "format": "uri"
+        },
+        "sourceCatalog": {
+          "type": "string",
+          "format": "uri"
+        },
+        "artifactPath": {
+          "type": "string"
+        },
+        "artifactUrl": {
           "type": "string",
           "format": "uri"
         }
