@@ -19,7 +19,7 @@
   "definitions": {
     "SourceRef": {
       "type": "object",
-      "required": ["registryType", "repoUrl", "manifestPath", "branch", "channel"],
+      "required": ["registryType", "repoUrl", "catalogPath", "branch", "channel"],
       "properties": {
         "registryType": {
           "$ref": "shared/common.schema.json#/definitions/RegistryType"
@@ -28,9 +28,9 @@
           "type": "string",
           "format": "uri"
         },
-        "manifestPath": {
+        "catalogPath": {
           "type": "string",
-          "default": "manifest.json"
+          "default": "index.jsonld"
         },
         "branch": {
           "type": "string",

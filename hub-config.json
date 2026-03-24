@@ -1,0 +1,26 @@
+{
+  "hubVersion": "0.1.0",
+  "sources": [
+    {
+      "registryType": "skill",
+      "repoUrl": "https://github.com/skillinterop/skill-registry",
+      "catalogPath": "index.jsonld",
+      "branch": "main",
+      "channel": "all"
+    },
+    {
+      "registryType": "cao-profile",
+      "repoUrl": "https://github.com/skillinterop/cao-profile-registry",
+      "catalogPath": "index.jsonld",
+      "branch": "main",
+      "channel": "all"
+    },
+    {
+      "registryType": "reprogate",
+      "repoUrl": "https://github.com/skillinterop/reprogate-registry",
+      "catalogPath": "index.jsonld",
+      "branch": "main",
+      "channel": "all"
+    }
+  ]
+}
