@@ -26,6 +26,10 @@ Options:
   --yes                    Skip the confirmation prompt and proceed automatically
   --save-receipt           Write a project-local import receipt to <project-root>/.registry/imports/
 
+State policy:
+  No lockfile or import metadata is written by default in Phase 4.
+  --save-receipt           Opt in to a hidden provenance file under .registry/imports/
+
 Examples:
   registry-hub-import preview skill/org/[MASKED_EMAIL] --runtime codex
   registry-hub-import import skill/org/[MASKED_EMAIL] --runtime codex --yes

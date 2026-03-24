@@ -84,6 +84,13 @@ npx @skillinterop/registry-hub-import import cao-profile/org/[MASKED_EMAIL] --pr
 | `--yes` | Skip the confirmation prompt and proceed automatically. |
 | `--save-receipt` | Write a project-local receipt under `.registry/imports/`. Default: no metadata written. |
 
+## State policy
+
+No lockfile or import metadata is written by default in Phase 4.
+Use --save-receipt when a project wants a hidden provenance file under .registry/imports/.
+
+Ordinary preview and import flows do not create `registry-lock.json`, `.registry/imports.json`, `.registry/lockfile.json`, or `.registry/imports/` unless `--save-receipt` is passed.
+
 ## Phase 4 destination policy
 
 ### Skills
