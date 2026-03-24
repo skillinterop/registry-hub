@@ -30,6 +30,7 @@ reprogate_index_path="$WORKSPACE_ROOT/reprogate-registry/index.jsonld"
 failures=0
 schema_temp_dir="$(mktemp -d)"
 common_schema_alias="$schema_temp_dir/common.schema.raw-id.json"
+enabled_local_sources="${REGISTRY_USE_LOCAL_SOURCES:-1}"
 
 python3 - <<'PY' "$COMMON_SCHEMA" "$common_schema_alias"
 import json, sys
@@ -132,13 +133,14 @@ trap cleanup EXIT
 
 cp -R "$HUB_DIR/." "$temp_dir/"
 
-generator_output="$(cd "$temp_dir" && bash ./scripts/generate-index.sh 2>&1)" || {
+set +e
+generator_output="$(cd "$temp_dir" && REGISTRY_USE_LOCAL_SOURCES="$enabled_local_sources" REGISTRY_WORKSPACE_ROOT="$WORKSPACE_ROOT" bash ./scripts/generate-index.sh 2>&1)"
+generator_status=$?
+set -e
+
+if [ "$generator_status" -ne 0 ]; then
   generator_output="$(echo "$generator_output" | tr '\n' ' ' | sed 's/[[:space:]]\\+/ /g; s/^ //; s/ $//')"
   report_fail "registry-hub-repo/scripts/generate-index.sh" "$generator_output"
-}
-
-if echo "$generator_output" | grep -q "WARNING:"; then
-  report_fail "registry-hub-repo/scripts/generate-index.sh" "generator emitted warnings during regeneration"
 else
   report_ok "registry-hub-repo/scripts/generate-index.sh"
 fi

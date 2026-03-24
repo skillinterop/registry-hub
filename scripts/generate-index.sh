@@ -5,9 +5,56 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 CONFIG_FILE="$ROOT_DIR/hub-config.json"
 OUTPUT_FILE="$ROOT_DIR/hub-index.json"
+WORKSPACE_ROOT="${REGISTRY_WORKSPACE_ROOT:-$(dirname "$ROOT_DIR")}"
+USE_LOCAL_SOURCES="${REGISTRY_USE_LOCAL_SOURCES:-0}"
 
 raw_base_url() {
   printf '%s' "$1" | sed 's|^https://github.com/|https://raw.githubusercontent.com/|'
+}
+
+repo_name_from_url() {
+  local repo_url="$1"
+  repo_url="${repo_url%.git}"
+  printf '%s' "${repo_url##*/}"
+}
+
+read_catalog() {
+  local registry_type="$1"
+  local repo_url="$2"
+  local catalog_path="$3"
+  local branch="$4"
+  local raw_catalog_url="$5"
+  local catalog
+
+  if [ "$USE_LOCAL_SOURCES" = "1" ]; then
+    local repo_name
+    local local_catalog_path
+    repo_name="$(repo_name_from_url "$repo_url")"
+    local_catalog_path="$WORKSPACE_ROOT/$repo_name/$catalog_path"
+    echo "Reading $registry_type from local checkout $local_catalog_path..." >&2
+    if [ ! -f "$local_catalog_path" ]; then
+      echo "ERROR: Missing local catalog for $registry_type at $local_catalog_path" >&2
+      exit 1
+    fi
+    catalog="$(cat "$local_catalog_path")"
+  else
+    echo "Fetching $registry_type from $raw_catalog_url..." >&2
+    if ! catalog="$(curl -sf --connect-timeout 10 --max-time 30 "$raw_catalog_url")"; then
+      echo "ERROR: Failed to fetch $registry_type from $raw_catalog_url" >&2
+      exit 1
+    fi
+  fi
+
+  if ! echo "$catalog" | jq empty >/dev/null 2>&1; then
+    if [ "$USE_LOCAL_SOURCES" = "1" ]; then
+      echo "ERROR: Invalid JSON in local catalog for $registry_type" >&2
+    else
+      echo "ERROR: Invalid JSON from $raw_catalog_url" >&2
+    fi
+    exit 1
+  fi
+
+  printf '%s' "$catalog"
 }
 
 HUB_VERSION=$(jq -r '.hubVersion' "$CONFIG_FILE")
@@ -23,18 +70,7 @@ while IFS= read -r source; do
   CHANNEL=$(echo "$source" | jq -r '.channel')
   RAW_BASE=$(raw_base_url "$REPO_URL")
   RAW_CATALOG_URL="${RAW_BASE}/${BRANCH}/${CATALOG_PATH}"
-
-  echo "Fetching $REGISTRY_TYPE from $RAW_CATALOG_URL..."
-
-  if ! CATALOG=$(curl -sf --connect-timeout 10 --max-time 30 "$RAW_CATALOG_URL"); then
-    echo "  WARNING: Failed to fetch $REGISTRY_TYPE from $RAW_CATALOG_URL" >&2
-    CATALOG='{"dataset":[]}'
-  fi
-
-  if ! echo "$CATALOG" | jq empty 2>/dev/null; then
-    echo "  WARNING: Invalid JSON from $RAW_CATALOG_URL, skipping" >&2
-    CATALOG='{"dataset":[]}'
-  fi
+  CATALOG="$(read_catalog "$REGISTRY_TYPE" "$REPO_URL" "$CATALOG_PATH" "$BRANCH" "$RAW_CATALOG_URL")"
 
   if [ "$CHANNEL" = "all" ]; then
     FILTERED_ITEMS=$(echo "$CATALOG" | jq --arg repo "$REPO_URL" --arg type "$REGISTRY_TYPE" --arg catalog "$RAW_CATALOG_URL" --arg rawBase "$RAW_BASE" --arg branch "$BRANCH" \
@@ -81,8 +117,7 @@ while IFS= read -r source; do
   REGISTRIES_JSON=$(echo "$REGISTRIES_JSON" | jq --argjson reg "$REGISTRY_SUMMARY" '. + [$reg]')
   ITEMS_JSON=$(echo "$ITEMS_JSON" | jq --argjson items "$FILTERED_ITEMS" '. + $items')
 
-  echo "  -> $ITEM_COUNT items"
-
+  echo "  -> $ITEM_COUNT items" >&2
 done < <(jq -c '.sources[]' "$CONFIG_FILE")
 
 ITEMS_JSON=$(echo "$ITEMS_JSON" | jq 'unique_by(.canonicalId)')
@@ -102,5 +137,4 @@ jq -n \
     items: $items
   }' > "$OUTPUT_FILE"
 
-echo ""
 echo "Generated $OUTPUT_FILE with $TOTAL_ITEMS items"
