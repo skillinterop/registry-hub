@@ -4,24 +4,27 @@
   "title": "Shared JSON-LD Catalog Definitions",
   "description": "Reusable schema definitions for the hub catalog and leaf registry JSON-LD catalogs",
   "definitions": {
+    "JsonLdContext": {
+      "type": "object",
+      "required": ["@vocab", "skillinterop"],
+      "properties": {
+        "@vocab": {
+          "type": "string",
+          "format": "uri"
+        },
+        "skillinterop": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": true
+    },
     "RegistryCatalog": {
       "type": "object",
       "required": ["@context", "@type", "name", "description", "hasPart"],
       "properties": {
         "@context": {
-          "type": "object",
-          "required": ["@vocab", "skillinterop"],
-          "properties": {
-            "@vocab": {
-              "type": "string",
-              "format": "uri"
-            },
-            "skillinterop": {
-              "type": "string",
-              "format": "uri"
-            }
-          },
-          "additionalProperties": true
+          "$ref": "#/definitions/JsonLdContext"
         },
         "@type": {
           "type": "string",
@@ -93,7 +96,7 @@
       "required": ["@context", "@type", "name", "description", "dataset"],
       "properties": {
         "@context": {
-          "$ref": "#/definitions/RegistryCatalog/properties/@context"
+          "$ref": "#/definitions/JsonLdContext"
         },
         "@type": {
           "type": "string",
@@ -120,7 +123,7 @@
       "required": ["@context", "@type", "name", "description", "dataset"],
       "properties": {
         "@context": {
-          "$ref": "#/definitions/RegistryCatalog/properties/@context"
+          "$ref": "#/definitions/JsonLdContext"
         },
         "@type": {
           "type": "string",
@@ -147,7 +150,7 @@
       "required": ["@context", "@type", "name", "description", "dataset"],
       "properties": {
         "@context": {
-          "$ref": "#/definitions/RegistryCatalog/properties/@context"
+          "$ref": "#/definitions/JsonLdContext"
         },
         "@type": {
           "type": "string",
