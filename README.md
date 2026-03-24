@@ -4,39 +4,42 @@
 
 ## 개요
 
-이 저장소는 **인덱스/집계 저장소**이며, 콘텐츠 저장소가 아님. Leaf 레지스트리를 참조로만 포함하고 실제 패키지 콘텐츠는 저장하지 않음. Wrapper 도구는 이 저장소 하나만 등록하면 나머지를 재귀적으로 해석할 수 있음.
+이 저장소는 leaf 레지스트리를 직접 담는 콘텐츠 저장소가 아니라, 어떤 레지스트리를 허브에 포함할지 선언하고 공개 허브 메타데이터를 배포하는 **허브 저장소**다.
+
+- `hub-config.json`: 유지보수자가 수정하는 canonical source-of-truth
+- `registry-catalog.jsonld`: 외부 도구와 프로젝트가 읽는 public hub entry point
+- `hub-index.json`: `hub-config.json`을 기준으로 생성되는 집계 결과물
+
+즉, 유지보수자는 `hub-config.json`을 수정하고, 소비자는 `registry-catalog.jsonld` 또는 생성된 `hub-index.json`을 읽는다.
 
 ## 디렉토리 구조
 
-```
+```text
 registry-hub/
-├── hub-config.json            # 소스 참조가 담긴 Hub 설정
-├── hub-index.json             # 생성된 인덱스 (sync 전까지 비어있음)
+├── hub-config.json            # 허브에 포함할 leaf 레지스트리 선언
+├── hub-index.json             # 생성된 허브 인덱스
+├── registry-catalog.jsonld    # 공개 허브 엔트리포인트
 ├── schemas/
 │   ├── hub-config.schema.json # hub-config.json용 JSON Schema
 │   ├── hub-index.schema.json  # hub-index.json용 JSON Schema
 │   └── shared/                # 공유 스키마 정의
-│       ├── common.schema.json       # 공통 타입 (Version, Channel 등)
-│       └── manifest-base.schema.json # Manifest 기본 속성
-├── sources/                   # 캐시된 manifest 스냅샷 (초기에는 비어있음)
-│   └── .gitkeep
+├── sources/                   # 동기화 시 생성되는 소스 캐시
 ├── docs/
-│   └── resolution.md          # Resolution 흐름 문서
-├── README.md
-└── .gitignore
+│   └── resolution.md          # 허브 해석 흐름 문서
+└── README.md
 ```
 
-## 등록된 소스
+## 현재 허브에 포함된 레지스트리
 
-| Registry Type | Repository | Branch | Channel |
-|---------------|------------|--------|---------|
-| skill | [skillinterop/skill-registry](https://github.com/skillinterop/skill-registry) | main | stable |
-| cao-profile | [skillinterop/cao-profile-registry](https://github.com/skillinterop/cao-profile-registry) | main | stable |
-| reprogate | [skillinterop/reprogate-registry](https://github.com/skillinterop/reprogate-registry) | main | stable |
+| Registry Type | Repository | Catalog | Branch | Channel |
+|---------------|------------|---------|--------|---------|
+| skill | [skillinterop/skill-registry](https://github.com/skillinterop/skill-registry) | `index.jsonld` | main | all |
+| cao-profile | [skillinterop/cao-profile-registry](https://github.com/skillinterop/cao-profile-registry) | `index.jsonld` | main | all |
+| reprogate | [skillinterop/reprogate-registry](https://github.com/skillinterop/reprogate-registry) | `index.jsonld` | main | all |
 
-## Hub Config 형식
+## Canonical Contract
 
-`hub-config.json`은 어떤 leaf 레지스트리를 포함할지 정의:
+`hub-config.json`은 허브에 어떤 leaf 레지스트리를 포함할지 선언하는 유일한 유지보수용 원본 파일이다. 각 source는 leaf 저장소의 GitHub URL과 해당 저장소의 `index.jsonld` 위치를 명시한다.
 
 ```json
 {
@@ -45,62 +48,64 @@ registry-hub/
     {
       "registryType": "skill",
       "repoUrl": "https://github.com/skillinterop/skill-registry",
-      "manifestPath": "manifest.json",
+      "catalogPath": "index.jsonld",
       "branch": "main",
-      "channel": "stable"
+      "channel": "all"
+    },
+    {
+      "registryType": "cao-profile",
+      "repoUrl": "https://github.com/skillinterop/cao-profile-registry",
+      "catalogPath": "index.jsonld",
+      "branch": "main",
+      "channel": "all"
+    },
+    {
+      "registryType": "reprogate",
+      "repoUrl": "https://github.com/skillinterop/reprogate-registry",
+      "catalogPath": "index.jsonld",
+      "branch": "main",
+      "channel": "all"
     }
   ]
 }
 ```
 
-## 소스 추가 방법
+`schemas/hub-config.schema.json`은 이 계약을 검증하며, `registryType`, `repoUrl`, `catalogPath`, `branch`, `channel` 다섯 필드를 요구한다.
 
-1. Leaf 레지스트리에 유효한 `manifest.json`이 있는지 확인
-2. `hub-config.json`의 `sources` 배열에 새 항목 추가
-3. `registryType`, `repoUrl`, `manifestPath`, `branch`, `channel` 지정
-4. PR 생성
+## Hub Resolution Flow
 
-## 우선순위 규칙
+1. 유지보수자가 `hub-config.json`에서 허브에 포함할 레지스트리를 선언한다.
+2. 허브 도구가 각 source의 `repoUrl`, `branch`, `catalogPath`를 따라 leaf `index.jsonld`를 읽는다.
+3. source 선언 순서와 `channel` 필터를 적용해 허브 메타데이터를 결합한다.
+4. 결과를 `hub-index.json`으로 생성하고, 외부 소비자는 `registry-catalog.jsonld`에서 허브 엔트리포인트를 찾는다.
 
-여러 소스가 동일한 `canonicalId`를 가진 항목을 포함할 때:
+`registry-catalog.jsonld`는 공개용 진입점이고, `hub-config.json`은 유지보수자가 버전 관리하는 내부 source declaration이라는 점이 핵심이다.
 
-1. **선언 순서 우선** — `hub-config.json`에서 먼저 나열된 소스가 우선권을 가짐
-2. **타입 간 충돌 불가** — `canonicalId`가 `registryType`을 prefix로 포함하므로 타입이 다르면 충돌 없음
+## 새 레지스트리 소스 추가 방법
 
-자세한 내용은 [docs/resolution.md](./docs/resolution.md) 참조.
+1. 새 leaf 저장소가 GitHub에 존재하고 루트에 `index.jsonld`를 제공하는지 확인한다.
+2. `hub-config.json`의 `sources` 배열에 새 source를 추가한다.
+3. `registryType`, `repoUrl`, `catalogPath`, `branch`, `channel`을 명시한다.
+4. `hub-config.schema.json`과 충돌하지 않는지 검증한 뒤 PR을 연다.
+
+## 공개 허브 메타데이터
+
+- `registry-catalog.jsonld`는 허브가 포함하는 leaf 카탈로그의 공개 진입점이다.
+- `hub-index.json`은 허브가 실제로 집계한 결과를 담는 generated artifact다.
+- 두 파일 모두 `hub-config.json`에 정의된 source membership를 기준으로 해석되어야 한다.
 
 ## 핵심 원칙
 
-- **Manifest-only 연결** — Hub는 leaf repo를 URL로만 참조, git submodule 사용 안 함
-- **콘텐츠 벤더링 금지** — 실제 패키지는 leaf 레지스트리에만 존재
-- **재귀적 해석** — Wrapper 도구가 이 hub를 fetch한 후 각 leaf를 해석
-- **채널 필터링** — 소스별로 `stable` 또는 `all` 채널 필터 가능
-
-## Shared Schema
-
-공통 타입 정의는 `schemas/shared/`에 위치:
-
-| 파일 | 내용 |
-|------|------|
-| `common.schema.json` | SemanticVersion, Channel, RegistryType, KebabCaseName, ItemStatus, ISODateTime |
-| `manifest-base.schema.json` | BaseManifestProperties, BaseManifestItem |
-
-Leaf 레지스트리는 GitHub raw URL로 이 스키마들을 `$ref` 참조:
-```json
-"$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/Channel"
-```
+- **Hub config is canonical**: 허브에 어떤 레지스트리가 속하는지는 `hub-config.json`만이 결정한다.
+- **JSON-LD catalogs are the leaf contract**: leaf 레지스트리는 `index.jsonld`로 자신을 노출한다.
+- **No content vendoring**: 실제 패키지 콘텐츠는 각 leaf 저장소에 남고, hub는 메타데이터만 집계한다.
+- **Deterministic ordering**: source 우선순위는 `hub-config.json`의 선언 순서를 따른다.
 
 ## 관련 저장소
 
-- [`skill-registry`](https://github.com/skillinterop/skill-registry) — Skill leaf 레지스트리
-- [`cao-profile-registry`](https://github.com/skillinterop/cao-profile-registry) — CAO profile leaf 레지스트리
-- [`reprogate-registry`](https://github.com/skillinterop/reprogate-registry) — ReproGate leaf 레지스트리
-
-## TODO
-
-- [x] 공유 스키마 추출 (`schemas/shared/`)
-- [ ] hub-index 생성 로직 구현
-- [ ] 자동 인덱스 재생성 CI workflow 추가
+- [`skill-registry`](https://github.com/skillinterop/skill-registry) — Skill leaf registry
+- [`cao-profile-registry`](https://github.com/skillinterop/cao-profile-registry) — CAO profile leaf registry
+- [`reprogate-registry`](https://github.com/skillinterop/reprogate-registry) — ReproGate leaf registry
 
 ## 라이선스
 
