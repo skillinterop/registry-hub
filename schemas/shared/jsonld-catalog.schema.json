@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/jsonld-catalog.schema.json",
+  "title": "Shared JSON-LD Catalog Definitions",
+  "description": "Reusable schema definitions for the hub catalog and leaf registry JSON-LD catalogs",
+  "definitions": {
+    "RegistryCatalog": {
+      "type": "object",
+      "required": ["@context", "@type", "name", "description", "hasPart"],
+      "properties": {
+        "@context": {
+          "type": "object",
+          "required": ["@vocab", "skillinterop"],
+          "properties": {
+            "@vocab": {
+              "type": "string",
+              "format": "uri"
+            },
+            "skillinterop": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "additionalProperties": true
+        },
+        "@type": {
+          "type": "string",
+          "const": "DataCatalog"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "distribution": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RegistryCatalogDistribution"
+          }
+        },
+        "hasPart": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/RegistryCatalogEntry"
+          }
+        }
+      }
+    },
+    "RegistryCatalogEntry": {
+      "type": "object",
+      "required": ["@type", "name", "url", "skillinterop:registryType"],
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "DataCatalog"
+        },
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "skillinterop:registryType": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/RegistryType"
+        }
+      }
+    },
+    "RegistryCatalogDistribution": {
+      "type": "object",
+      "required": ["@type", "name", "contentUrl", "encodingFormat"],
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "DataDownload"
+        },
+        "name": {
+          "type": "string"
+        },
+        "contentUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "encodingFormat": {
+          "type": "string"
+        }
+      }
+    },
+    "SkillLeafCatalog": {
+      "type": "object",
+      "required": ["@context", "@type", "name", "description", "dataset"],
+      "properties": {
+        "@context": {
+          "$ref": "#/definitions/RegistryCatalog/properties/@context"
+        },
+        "@type": {
+          "type": "string",
+          "const": "DataCatalog"
+        },
+        "name": {
+          "type": "string",
+          "const": "Skill Registry"
+        },
+        "description": {
+          "type": "string"
+        },
+        "dataset": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/SkillLeafItem"
+          }
+        }
+      }
+    },
+    "CaoProfileLeafCatalog": {
+      "type": "object",
+      "required": ["@context", "@type", "name", "description", "dataset"],
+      "properties": {
+        "@context": {
+          "$ref": "#/definitions/RegistryCatalog/properties/@context"
+        },
+        "@type": {
+          "type": "string",
+          "const": "DataCatalog"
+        },
+        "name": {
+          "type": "string",
+          "const": "CAO Profile Registry"
+        },
+        "description": {
+          "type": "string"
+        },
+        "dataset": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/CaoProfileLeafItem"
+          }
+        }
+      }
+    },
+    "ReprogateLeafCatalog": {
+      "type": "object",
+      "required": ["@context", "@type", "name", "description", "dataset"],
+      "properties": {
+        "@context": {
+          "$ref": "#/definitions/RegistryCatalog/properties/@context"
+        },
+        "@type": {
+          "type": "string",
+          "const": "DataCatalog"
+        },
+        "name": {
+          "type": "string",
+          "const": "ReproGate Registry"
+        },
+        "description": {
+          "type": "string"
+        },
+        "dataset": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/ReprogateLeafItem"
+          }
+        }
+      }
+    },
+    "SkillLeafItem": {
+      "type": "object",
+      "required": ["@type", "identifier", "name", "version", "description", "url", "skillinterop:status", "skillinterop:channel"],
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "SoftwareSourceCode"
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^skill/[^/]+/[a-z0-9][a-z0-9-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "name": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/KebabCaseName"
+        },
+        "version": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/SemanticVersion"
+        },
+        "description": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^\\./skills/[^/]+/SKILL\\.md$"
+        },
+        "skillinterop:status": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/ItemStatus"
+        },
+        "skillinterop:channel": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/Channel"
+        }
+      }
+    },
+    "CaoProfileLeafItem": {
+      "type": "object",
+      "required": ["@type", "identifier", "name", "version", "description", "url", "skillinterop:status", "skillinterop:channel"],
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "SoftwareApplication"
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^cao-profile/[^/]+/[a-z0-9][a-z0-9-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "name": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/KebabCaseName"
+        },
+        "version": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/SemanticVersion"
+        },
+        "description": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^\\./profiles/[^/]+/PROFILE\\.md$"
+        },
+        "skillinterop:status": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/ItemStatus"
+        },
+        "skillinterop:channel": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/Channel"
+        }
+      }
+    },
+    "ReprogateLeafItem": {
+      "type": "object",
+      "required": ["@type", "identifier", "name", "version", "description", "url", "skillinterop:status", "skillinterop:channel"],
+      "properties": {
+        "@type": {
+          "type": "string",
+          "const": "SoftwareApplication"
+        },
+        "identifier": {
+          "type": "string",
+          "pattern": "^reprogate/[^/]+/[a-z0-9][a-z0-9-]*@[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "name": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/KebabCaseName"
+        },
+        "version": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/SemanticVersion"
+        },
+        "description": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^\\./gates/[^/]+/GATE\\.md$"
+        },
+        "skillinterop:status": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/ItemStatus"
+        },
+        "skillinterop:channel": {
+          "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/common.schema.json#/definitions/Channel"
+        }
+      }
+    }
+  }
+}

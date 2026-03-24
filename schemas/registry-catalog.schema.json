@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/registry-catalog.schema.json",
+  "title": "Registry Hub Public Catalog",
+  "description": "Schema for registry-hub-repo/registry-catalog.jsonld",
+  "$ref": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/schemas/shared/jsonld-catalog.schema.json#/definitions/RegistryCatalog"
+}
