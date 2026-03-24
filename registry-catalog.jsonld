@@ -6,6 +6,14 @@
   "@type": "DataCatalog",
   "name": "SkillInterop Registry Hub",
   "description": "Central entrypoint for SkillInterop registries",
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "name": "SkillInterop Hub Index",
+      "contentUrl": "https://raw.githubusercontent.com/skillinterop/registry-hub/main/hub-index.json",
+      "encodingFormat": "application/json"
+    }
+  ],
   "hasPart": [
     {
       "@type": "DataCatalog",
