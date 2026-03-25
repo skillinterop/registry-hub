@@ -44,3 +44,5 @@ jobs:
       - name: Validate registry contracts
         working-directory: registry-hub-repo
         run: bash scripts/validate-registry-contracts.sh
+
+# trigger check context
