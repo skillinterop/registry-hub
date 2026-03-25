@@ -100,7 +100,7 @@ apply_protection() {
   local first=true
   for ctx in "${checks[@]}"; do
     if [ "$first" = true ]; then first=false; else checks_json+=","; fi
-    checks_json+="{\"context\":\"$ctx\",\"app_id\":-1}"
+    checks_json+="{\"context\":\"$ctx\",\"app_id\":15368}"
   done
   checks_json+="]"
 
