@@ -110,7 +110,7 @@ mapping_ok=$(jq -n \
   --slurpfile cat "$registry_catalog_path" \
   '($cfg[0].sources | map({
       registryType,
-      url: (.repoUrl | sub("^https://github.com/"; "https://raw.githubusercontent.com/")) + "/" + .branch + "/" + .catalogPath
+      url: ((.repoUrl | sub("^https://github.com/"; "https://raw.githubusercontent.com/")) + "/" + .branch + "/" + .catalogPath)
     }) | sort_by(.registryType))
    ==
    ($cat[0].hasPart | map({
